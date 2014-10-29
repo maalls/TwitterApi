@@ -1,13 +1,16 @@
 <?php
 
-include __dir__ . "/../vendor/autoload.php";
-class TwitterApiTest extends PHPUnit_Framework_TestCase {
+namespace Maalls\Test;
+use \Exception;
+include __dir__ . "/bootstrap.php";
+
+class TwitterApiTest extends \PHPUnit_Framework_TestCase {
   
   public function testConstruct() {
 
     try {
       
-      $twitterApi = new Maalls\TwitterApi();
+      $twitterApi = new \Maalls\TwitterApi();
       $this->assertTrue(false, "Exception should be thrown.");
 
     }
@@ -20,7 +23,7 @@ class TwitterApiTest extends PHPUnit_Framework_TestCase {
 
     try {
       
-      $twitterApi = new Maalls\TwitterApi("dsfdsffd");
+      $twitterApi = new \Maalls\TwitterApi("dsfdsffd");
       $this->assertTrue(false, "Exception should be thrown.");
 
     }
@@ -33,7 +36,7 @@ class TwitterApiTest extends PHPUnit_Framework_TestCase {
 
     try {
       
-      $twitterApi = new Maalls\TwitterApi("dsfdsffd", "tdsfdsfdsf");
+      $twitterApi = new \Maalls\TwitterApi("dsfdsffd", "tdsfdsfdsf");
       $this->assertTrue(false, "Exception should be thrown.");
 
     }
@@ -46,7 +49,7 @@ class TwitterApiTest extends PHPUnit_Framework_TestCase {
 
     try {
       
-      $twitterApi = new Maalls\TwitterApi("dsfdsffd", "tdsfdsfdsf", "dsfdsfsdfsdf");
+      $twitterApi = new \Maalls\TwitterApi("dsfdsffd", "tdsfdsfdsf", "dsfdsfsdfsdf");
       $this->assertTrue(false, "Exception should be thrown.");
 
     }
@@ -61,9 +64,8 @@ class TwitterApiTest extends PHPUnit_Framework_TestCase {
 
   public function testGet() {
 
-    
-    $twitterApi = $this->createTwitterApi();
-    $json = $twitterApi->get("search/tweets", array("q" => "hello", "count" => 5));
+    $twitterApi = Factory::create("\Maalls\TwitterApi");
+    $json = $twitterApi->get("search/tweets", array("q" => "hello world", "count" => 5));
 
     $data = json_decode($json, true);
 
@@ -73,28 +75,12 @@ class TwitterApiTest extends PHPUnit_Framework_TestCase {
 
   public function testPost() {
 
-    $twitterApi = $this->createTwitterApi();
+    $twitterApi = Factory::create("\Maalls\TwitterApi");
 
     $data = json_decode($twitterApi->post("statuses/update", array("status" => "@usn_sns hello world" . time())), true);
 
     $this->assertTrue(isset($data["id_str"]));
     
-
-
-  }
-
-  protected function createTwitterApi() {
-
-    $config = @parse_ini_file(__dir__ . "/config/config.ini");
-
-    if(!$config) {
-
-      $msg = "To do the test, create test/config/config.ini file that contains your Twitter credentials. (see test/config/config.ini.sample)";
-      throw new Exception($msg);
-
-    }
-
-    return new Maalls\TwitterApi($config["oauth_access_token"], $config["oauth_access_token_secret"], $config["consumer_key"], $config["consumer_secret"]);
 
 
   }

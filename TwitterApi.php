@@ -80,7 +80,7 @@ class TwitterApi {
     
     ksort($this->oauth);
 
-    $data = $this->method . "&" . rawurlencode($this->buildUrl()) . "&" . rawurlencode(http_build_query($this->oauth));
+    $data = $this->method . "&" . rawurlencode($this->buildUrl()) . "&" . rawurlencode($this->buildQuery($this->oauth));
     $key = rawurlencode($this->consumer_secret) . '&' . rawurlencode($this->oauth_acess_token_secret);
 
     $this->oauth["oauth_signature"] = base64_encode(hash_hmac('sha1', $data, $key, true));
@@ -93,7 +93,7 @@ class TwitterApi {
     $header = array($this->buildAuthorizationHeader(), "Except:");
 
     $options = array( 
-        CURLOPT_URL => $this->buildUrl() . ($this->queries && $this->method == "GET" ? "?" . http_build_query($this->queries) : ""),
+        CURLOPT_URL => $this->buildUrl() . ($this->queries && $this->method == "GET" ? "?" . $this->buildQuery($this->queries) : ""),
         CURLOPT_HTTPHEADER => $header,
         CURLOPT_HEADER => false,
         CURLOPT_RETURNTRANSFER => true,
@@ -140,6 +140,16 @@ class TwitterApi {
   public function setCurl($curl) {
 
     $this->curl = $curl;
+
+  }
+
+  public function buildQuery($queries) {
+
+    $q = "";
+
+    foreach($queries as $key => $value) $q[] = "$key=" . rawurlencode($value);
+
+    return implode("&", $q);
 
   }
 
