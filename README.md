@@ -1,7 +1,7 @@
 TwitterApi
 ==========
 
-Simple PHP Twitter API class using OAuth 1.1.
+Simple Twitter API using OAuth 1.1, in PHP.
 
 ```php
 
