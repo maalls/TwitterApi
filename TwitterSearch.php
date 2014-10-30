@@ -8,7 +8,7 @@ class TwitterSearch extends TwitterApi {
   public function search($query) {
 
     $params = array(
-        "q" => urlencode($query),
+        "q" => $query,
         "count" => 100,
         "result_type" => "recent");
     
@@ -16,8 +16,9 @@ class TwitterSearch extends TwitterApi {
 
     do {
 
+        $this->log("Searching " . http_build_query($params));
         $json = $this->get("search/tweets", $params);
-
+        
         $response = json_decode($json, true);
         
         if(!isset($response["statuses"])) {
@@ -40,6 +41,8 @@ class TwitterSearch extends TwitterApi {
                 
                 $params["max_id"] = $tweets[count($tweets) - 1]["id_str"];
                 $results = array_merge($results, $tweets);
+
+                $this->log("results for page: " . count($tweets) . ", total: " . count($results));
 
             }
 
