@@ -18,6 +18,9 @@ class TwitterApi {
   private $action;
   private $method;
 
+  public $header;
+  public $body;
+
 
   public function __construct($oauth_access_token = "", $oauth_acess_token_secret = "", $consumer_key = "", $consumer_secret = "") {
 
@@ -53,7 +56,30 @@ class TwitterApi {
     $this->initParameters($action, $queries, $method);
     $this->initOAuth();
     $this->initCurl();
-    return $this->curl->execute();
+    $this->processResponse(); 
+
+    return $this->body ;
+
+
+  }
+
+  public function processResponse() {
+
+    $response = $this->curl->execute();
+
+    $header_size = $this->curl->getInfo(CURLINFO_HEADER_SIZE);
+    $header = substr($response, 0, $header_size);
+
+    $this->header = array();
+    foreach(explode("\n", $header) as $k => $line) {
+
+      if($k == 0 || !trim($line)) continue;
+
+      if(list($label, $value) = @explode(":", $line)) $this->header[trim($label)] = trim($value);
+
+    }
+
+    $this->body = substr($response, $header_size);
 
   }
 
@@ -95,7 +121,7 @@ class TwitterApi {
     $options = array( 
         CURLOPT_URL => $this->buildUrl() . ($this->queries && $this->method == "GET" ? "?" . $this->buildQuery($this->queries) : ""),
         CURLOPT_HTTPHEADER => $header,
-        CURLOPT_HEADER => false,
+        CURLOPT_HEADER => true,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT => 10,
     );
@@ -130,13 +156,6 @@ class TwitterApi {
 
   }
 
-
-  public function setLogger($logger) {
-
-    $this->logger = $logger;
-
-  }
-
   public function setCurl($curl) {
 
     $this->curl = $curl;
@@ -150,6 +169,18 @@ class TwitterApi {
     foreach($queries as $key => $value) $q[] = "$key=" . rawurlencode($value);
 
     return implode("&", $q);
+
+  }
+
+  public function setLogger($logger) {
+
+    $this->logger = $logger;
+
+  }
+
+  public function log($msg, $level = "info") {
+
+    if($this->logger) $this->logger->log($msg, $level);
 
   }
 
