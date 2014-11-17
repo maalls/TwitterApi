@@ -17,6 +17,6 @@
 
   },
   "autoload": {
-    "files": ["TwitterApi.php", "TwitterSearch.php"]
+    "files": ["OAuthHmacSha1.php", "OAuth1.php", "TwitterApi.php"]
   }
 }

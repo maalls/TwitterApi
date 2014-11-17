@@ -29,7 +29,7 @@ class TwitterApiTest extends \PHPUnit_Framework_TestCase {
     }
     catch(Exception $e) {
 
-      if($e->getMessage() == "oauth_acess_token_secret required.") $this->assertTrue(true);
+      if($e->getMessage() == "oauth_access_token_secret required.") $this->assertTrue(true);
       else $this->assertTrue(false, "Unexpected exception message.");
 
     }
@@ -42,7 +42,7 @@ class TwitterApiTest extends \PHPUnit_Framework_TestCase {
     }
     catch(Exception $e) {
 
-      if($e->getMessage() == "consumer_key required.") $this->assertTrue(true);
+      if($e->getMessage() == "oauth_consumer_key required.") $this->assertTrue(true);
       else $this->assertTrue(false, "Unexpected exception message.");
 
     }
@@ -77,10 +77,33 @@ class TwitterApiTest extends \PHPUnit_Framework_TestCase {
 
     $twitterApi = Factory::create("\Maalls\TwitterApi");
 
-    $data = json_decode($twitterApi->post("statuses/update", array("status" => "@usn_sns hello world" . time())), true);
+    $data = json_decode($twitterApi->post("statuses/update", array("status" => "@usn_sns hello world " . time())), true);
 
     $this->assertTrue(isset($data["id_str"]));
     
+
+
+  }
+
+  public function testIterate() {
+
+    $twitterApi = Factory::create("\Maalls\TwitterApi");
+
+    $results = $twitterApi->iterate("/search/tweets", array("q" => "nike", "count" => 5), "get", 3);
+
+
+    $this->assertEquals(13, count($results)); // 5 + 4 + 4 = 13
+
+  }
+
+  public function testSearch() {
+
+    $twitterApi = Factory::create("\Maalls\TwitterApi");
+
+    $results = $twitterApi->search(array("q" => "nike", "count" => 20), 3);
+
+
+    $this->assertEquals(58, count($results)); // 20 + 19 + 19 = 58
 
 
   }

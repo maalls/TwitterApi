@@ -2,185 +2,100 @@
 
 namespace Maalls;
 use \Exception;
-class TwitterApi {
 
-  private $base_url = "https://api.twitter.com/1.1/";
-  private $format = "json";
-  private $oauth_access_token;
-  private $oauth_acess_token_secret;
-  private $consumer_key;
-  private $consumer_secret;
-
-  private $curl;
-  private $logger;
-
-  private $oauth;
-  private $action;
-  private $method;
-
-  public $header;
-  public $body;
+class TwitterApi extends OAuth1 {
 
 
-  public function __construct($oauth_access_token = "", $oauth_acess_token_secret = "", $consumer_key = "", $consumer_secret = "") {
+  public function __construct($oauth_access_token = "", $oauth_access_token_secret = "", $oauth_consumer_key = "", $consumer_secret = "") {
 
-    
-    if(!$oauth_access_token) throw new Exception("oauth_access_token required.");
-    if(!$oauth_acess_token_secret) throw new Exception("oauth_acess_token_secret required.");
-    if(!$consumer_key) throw new Exception("consumer_key required.");
-    if(!$consumer_secret) throw new Exception("consumer_secret required.");
-    
-    $this->oauth_access_token = $oauth_access_token;
-    $this->oauth_acess_token_secret = $oauth_acess_token_secret;
-    $this->consumer_key = $consumer_key;
-    $this->consumer_secret = $consumer_secret;
+    $this->setBaseUrl("https://api.twitter.com/1.1/");
+    $this->setFormat("json");
 
-    $this->curl = new Curl\Curl();
-
-  }
-
-  public function get($action, $queries = array()) {
-
-    return $this->request($action, $queries, "GET");
-
-  }
-
-  public function post($action, $queries = array()) {
-
-    return $this->request($action, $queries, "POST");
-
-  }
-
-  public function request($action, $queries, $method = "GET") {
-
-    $this->initParameters($action, $queries, $method);
-    $this->initOAuth();
-    $this->initCurl();
-    $this->processResponse(); 
-
-    return $this->body ;
+    return parent::__construct($oauth_access_token, $oauth_access_token_secret, $oauth_consumer_key, $consumer_secret);
 
 
   }
 
-  public function processResponse() {
+  public function search($queries, $max_page = null) {
 
-    $response = $this->curl->execute();
+    $params = array("result_type" => "recent", "count" => 100);
+    $queries = is_array($queries) ? $queries : array("q" => $queries);
 
-    $header_size = $this->curl->getInfo(CURLINFO_HEADER_SIZE);
-    $header = substr($response, 0, $header_size);
+    return $this->iterate("search/tweets", array_merge($params, $queries), "GET", $max_page);
 
-    $this->header = array();
-    foreach(explode("\n", $header) as $k => $line) {
+  }
 
-      if($k == 0 || !trim($line)) continue;
+  public function iterate($action, $queries = array(), $method = "GET", $max_page = null) {
 
-      if(list($label, $value) = @explode(":", $line)) $this->header[trim($label)] = trim($value);
+    $params = $queries;
+    $results = array();
+    $page = 1;
+    $continue = true;
 
+    do {
+
+        $this->log($action . " " . http_build_query($params));
+        $json = $this->get($action, $params, $method);
+
+        $response = json_decode($json, true);
+        
+        if(!isset($response["statuses"])) {
+
+            throw new \Exception($json);
+
+        }
+
+        $tweets = $response["statuses"];
+
+        if($tweets) {
+        
+            if(isset($params["max_id"])) {
+
+                array_shift($tweets);
+
+            }            
+
+            if($tweets) {
+                
+                $params["max_id"] = $tweets[count($tweets) - 1]["id_str"];
+                $results = array_merge($results, $tweets);
+
+            }
+
+        }
+
+        $this->log("$page count: " . count($tweets) . ", total: " . count($results) . ", rate limit: " . $this->header["x-rate-limit-remaining"] . " / " . $this->header["x-rate-limit-limit"]);
+        $reset = $this->header["x-rate-limit-reset"];
+
+        $this->log("Reset : " . date("Y-m-d H:i:s", $reset) . ", now : " . date("Y-m-d H:i:s"));
+
+        
+
+        if(count($tweets) == 0) {
+
+            $this->log("No more tweets " . $results[count($results) - 1]["id_str"]);
+            $continue = false;
+
+        }
+        elseif(isset($params["since_id"]) && $tweets[count($tweets) - 1]["id_str"] > $params["since_id"]) {
+
+            $this->log("last tweet has been reached.");
+            $continue = false;
+
+        }
+
+        if($page  === $max_page) {
+
+          $continue = false;
+
+        }
+
+        $page++;
+           
     }
+    while($continue);
 
-    $this->body = substr($response, $header_size);
-
-  }
-
-  public function initParameters($action, $queries = array(), $method = "GET") {
-
-    $this->action = $action;
-    $this->method = $method;
-    $this->queries = $queries;
-    
-  }
-
-  public function initOAuth() {
-
-    $this->oauth = array( 
-        'oauth_consumer_key' => $this->consumer_key,
-        'oauth_nonce' => time(),
-        'oauth_signature_method' => 'HMAC-SHA1',
-        'oauth_token' => $this->oauth_access_token,
-        'oauth_timestamp' => time(),
-        'oauth_version' => '1.0'
-    );
-
-    if($this->method == "GET") $this->oauth = array_merge($this->oauth, $this->queries);
-    
-    ksort($this->oauth);
-
-    $data = $this->method . "&" . rawurlencode($this->buildUrl()) . "&" . rawurlencode($this->buildQuery($this->oauth));
-    $key = rawurlencode($this->consumer_secret) . '&' . rawurlencode($this->oauth_acess_token_secret);
-
-    $this->oauth["oauth_signature"] = base64_encode(hash_hmac('sha1', $data, $key, true));
-
-
-  }
-
-  public function initCurl() {
-
-    $header = array($this->buildAuthorizationHeader(), "Except:");
-
-    $options = array( 
-        CURLOPT_URL => $this->buildUrl() . ($this->queries && $this->method == "GET" ? "?" . $this->buildQuery($this->queries) : ""),
-        CURLOPT_HTTPHEADER => $header,
-        CURLOPT_HEADER => true,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 10,
-    );
-
-    if($this->queries && $this->method == "POST") {
-
-      if(isset($this->queries["status"]) && $this->queries["status"][0] == "@") $this->queries["status"] = sprintf("\0%s", $this->queries['status']);
-
-      $options[CURLOPT_POSTFIELDS] = $this->queries;
-
-    }
-
-    $this->curl->setOptions($options);
-
-  }
-
-  public function buildAuthorizationHeader() {
-
-    $return = 'Authorization: OAuth ';
-    $values = array();
-    
-    foreach($this->oauth as $key => $value) $values[] = "$key=\"" . rawurlencode($value) . "\"";
-    
-    $return .= implode(', ', $values);
-    return $return;
-
-  }
-
-  public function buildUrl() {
-
-    return $this->base_url . $this->action . "." . $this->format;
-
-  }
-
-  public function setCurl($curl) {
-
-    $this->curl = $curl;
-
-  }
-
-  public function buildQuery($queries) {
-
-    $q = "";
-
-    foreach($queries as $key => $value) $q[] = "$key=" . rawurlencode($value);
-
-    return implode("&", $q);
-
-  }
-
-  public function setLogger($logger) {
-
-    $this->logger = $logger;
-
-  }
-
-  public function log($msg, $level = "info") {
-
-    if($this->logger) $this->logger->log($msg, $level);
+    return $results;
 
   }
 
