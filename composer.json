@@ -13,7 +13,7 @@
   ],
   "require": {
 
-    "maalls/Curl": "dev-master"
+    "maalls/Curl": "1.0"
 
   },
   "autoload": {
