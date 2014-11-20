@@ -18,7 +18,6 @@ $composer update
 
 #Examples
 ```php
-
 use Maalls\TwitterApi;
 
 // A get request.
@@ -31,6 +30,24 @@ $json = $api->>post("statuses/update", array("status" => "I love coding."));
 // iterate() works for actions that returns an array of tweets: it collects all the tweets available by making several HTTP request and adjusting max_id parameters.
 // see https://dev.twitter.com/rest/public/timelines
 $json = $api->iterate('twitter/search', array('q' => 'githun'));
-
-
 ```
+
+The class also collect the HTTP response header into an array, this is useful because it includes rate limit information:
+```php
+var_dump($api->header);
+
+array(17) {
+  [...]
+  'x-rate-limit-limit' =>
+  string(3) "180"
+  'x-rate-limit-remaining' =>
+  string(3) "179"
+  'x-rate-limit-reset' =>
+  string(10) "1416472112"
+  'x-transaction' =>
+  string(16) "5e9915dd07154773"
+  'x-xss-protection' =>
+  string(13) "1; mode=block"
+}
+```
+
