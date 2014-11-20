@@ -5,30 +5,17 @@ Simple Twitter API using OAuth 1.1, in PHP.
 
 #Installation
 
+
+##Using Composer
+Add the follow to your composer.json:
 ```json
-Using composer
-{
-  "name": "maalls/twitterapi",
-  "description": "Implementation of the Twitter API for PHP.",
-  "type": "library",
-  "keywords": ["twitter", "PHP", "API"],
-  "homepage": "https://github.com/maalls/twitterapi",
-  "license": "MIT License",
-  "authors": [
-    {
-      "name": "Malo Yamakado",
-      "homepage": "https://github.com/maalls"
-    }
-  ],
   "require": {
-
     "maalls/Curl": "1.0"
-
-  },
-  "autoload": {
-    "files": ["OAuthHmacSha1.php", "OAuth1.php", "TwitterApi.php"]
   }
-}
+```
+Then run the following command line:
+```bash
+$composer update
 ```
 
 #Examples
