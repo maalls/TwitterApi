@@ -44,10 +44,7 @@ array(17) {
   string(3) "179"
   'x-rate-limit-reset' =>
   string(10) "1416472112"
-  'x-transaction' =>
-  string(16) "5e9915dd07154773"
-  'x-xss-protection' =>
-  string(13) "1; mode=block"
+  [...]
 }
 ```
 
