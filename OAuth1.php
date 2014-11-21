@@ -187,6 +187,12 @@ class OAuth1 {
 
   }
 
+  public function getCurl() {
+
+    return $this->curl;
+
+  }
+
   public function buildQuery($queries) {
 
     $q = "";

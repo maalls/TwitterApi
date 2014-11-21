@@ -27,6 +27,7 @@ class TwitterApi extends OAuth1 {
 
   public function iterate($action, $queries = array(), $method = "GET", $max_page = null) {
 
+
     $params = $queries;
     $results = array();
     $page = 1;
@@ -37,16 +38,18 @@ class TwitterApi extends OAuth1 {
         $this->log($action . " " . http_build_query($params));
         $json = $this->get($action, $params, $method);
 
-        $response = json_decode($json, true);
+        if($this->getCurl()->getInfo(CURLINFO_HTTP_CODE) != 200) throw new \Exception("Invalid HTTP CODE: " . $this->getCurl()->getOption(CURLINFO_HTTP_CODE), $json);
         
-        if(!isset($response["statuses"])) {
 
-            throw new \Exception($json);
+        $tweets = json_decode($json, true);
+
+        if(isset($tweets["statuses"])) {
+
+          $tweets = $tweets["statuses"];
 
         }
 
-        $tweets = $response["statuses"];
-
+        
         if($tweets) {
         
             if(isset($params["max_id"])) {
