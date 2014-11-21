@@ -76,7 +76,7 @@ class TwitterApi extends OAuth1 {
 
         if(count($tweets) == 0) {
 
-            $this->log("No more tweets " . $results[count($results) - 1]["id_str"]);
+            $this->log("No more tweets " . ($results ? $results[count($results) - 1]["id_str"] : ""));
             $continue = false;
 
         }
