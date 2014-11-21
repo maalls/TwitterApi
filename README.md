@@ -8,7 +8,7 @@ Simple Twitter API using OAuth 1.1, in PHP.
 Add the following line into the require section of your composer.json:
 ```json
   "require": {
-    "maalls/Curl": "1.0"
+    "maalls/TwitterApi": "~1.0"
   }
 ```
 Then run the following command line:
