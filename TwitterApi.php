@@ -38,7 +38,7 @@ class TwitterApi extends OAuth1 {
         $this->log($action . " " . http_build_query($params));
         $json = $this->get($action, $params, $method);
 
-        if($this->getCurl()->getInfo(CURLINFO_HTTP_CODE) != 200) throw new \Exception("Invalid HTTP CODE: " . $this->getCurl()->getOption(CURLINFO_HTTP_CODE), $json);
+        if($this->getCurl()->getInfo(CURLINFO_HTTP_CODE) != 200) throw new \Exception("Invalid HTTP CODE: " . $this->getCurl()->getInfo(CURLINFO_HTTP_CODE), $json);
         
 
         $tweets = json_decode($json, true);
