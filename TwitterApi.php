@@ -80,7 +80,7 @@ class TwitterApi extends OAuth1 {
             $continue = false;
 
         }
-        elseif(isset($params["since_id"]) && $tweets[count($tweets) - 1]["id_str"] > $params["since_id"]) {
+        elseif(isset($params["since_id"]) && $tweets[count($tweets) - 1]["id_str"] <= $params["since_id"]) {
 
             $this->log("last tweet has been reached.");
             $continue = false;
