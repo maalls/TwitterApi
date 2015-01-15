@@ -67,10 +67,10 @@ class TwitterApi extends OAuth1 {
 
         }
 
-        $this->log("$page count: " . count($tweets) . ", total: " . count($results) . ", rate limit: " . $this->header["x-rate-limit-remaining"] . " / " . $this->header["x-rate-limit-limit"]);
+        $this->log("page: $page, count: " . count($tweets) . ", total: " . count($results) . ", rate limit: " . $this->header["x-rate-limit-remaining"] . " / " . $this->header["x-rate-limit-limit"]);
         $reset = $this->header["x-rate-limit-reset"];
 
-        $this->log("Reset : " . date("Y-m-d H:i:s", $reset) . ", now : " . date("Y-m-d H:i:s"));
+        $this->log("Rate Reset at : " . date("Y-m-d H:i:s", $reset) . ", now : " . date("Y-m-d H:i:s"));
 
         
 
