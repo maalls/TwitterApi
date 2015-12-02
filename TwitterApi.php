@@ -66,14 +66,18 @@ class TwitterApi extends OAuth1 {
             }
 
         }
-
-        $this->log("page: $page, count: " . count($tweets) . ", total: " . count($results) . ", rate limit: " . $this->header["x-rate-limit-remaining"] . " / " . $this->header["x-rate-limit-limit"]);
-        $reset = $this->header["x-rate-limit-reset"];
-
-        $this->log("Rate Reset at : " . date("Y-m-d H:i:s", $reset) . ", now : " . date("Y-m-d H:i:s"));
-
+        $remaining = isset($this->header["x-rate-limit-remaining"]) ? $this->header["x-rate-limit-remaining"] : null;
+        $limit = isset($this->header["x-rate-limit-limit"]) ? $this->header["x-rate-limit-limit"] : null;
         
+        $this->log("page: $page, count: " . count($tweets) . ", total: " . count($results) . ", rate limit: " . $remaining . " / " . $limit);
+        $reset = isset($this->header["x-rate-limit-reset"]) ? $this->header["x-rate-limit-limit"] : null;
 
+        if($reset) {
+        
+          $this->log("Rate Reset at : " . date("Y-m-d H:i:s", $reset) . ", now : " . date("Y-m-d H:i:s"));
+          
+        }
+        
         if(count($tweets) == 0) {
 
             $this->log("No more tweets " . ($results ? $results[count($results) - 1]["id_str"] : ""));
