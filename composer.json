@@ -13,7 +13,7 @@
   ],
   "require": {
 
-    "maalls/Curl": "^1"
+    "maalls/curl": "^1"
 
   },
   "autoload": {
